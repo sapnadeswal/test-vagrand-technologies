@@ -1,0 +1,63 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+unordered_map<string, vector<double>> prices = {
+    {"TOI", {3, 3, 3, 3, 3, 5, 6}},
+    {"Hindu", {2.5, 2.5, 2.5, 2.5, 2.5, 4, 4}},
+    {"ET", {4, 4, 4, 4, 4, 4, 10}},
+    {"BM", {1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5}},
+    {"HT", {2, 2, 2, 2, 2, 4, 4}}
+};
+
+unordered_map<string, double> cost_cache;
+set<vector<string>> possible_subs;
+
+double get_total_cost(vector<string> subscriptions) {
+    double total = 0;
+    string key = "";
+    for (string newspaper : subscriptions) {
+        key += newspaper;
+    }
+    if (cost_cache.find(key) != cost_cache.end()) {
+        return cost_cache[key];
+    } else {
+        for (string newspaper : subscriptions) {
+            for (double cost : prices[newspaper]) {
+                total += cost;
+            }
+        }
+        cost_cache[key] = total;
+        return total;
+    }
+}
+
+void possible_subscriptions(vector<string> current_subscriptions, double remaining_budget, unordered_map<string,vector<double>> newspapers) {
+    if (remaining_budget < 0) return;
+    if (remaining_budget == 0 && newspapers.empty()) {
+        possible_subs.insert(current_subscriptions);
+        return;
+    }
+    for (auto newspaper : newspapers) {
+        auto remaining_newspapers = newspapers;
+        remaining_newspapers.erase(newspaper.first);
+        possible_subscriptions(current_subscriptions, remaining_budget - get_total_cost(vector<string>{newspaper.first}), remaining_newspapers);
+    }
+}
+
+int main() {
+    double budget;
+    cout << "Enter budget: ";
+    cin >> budget;
+
+    possible_subscriptions({}, budget, prices);
+
+    for (vector<string> subscriptions : possible_subs) {
+        cout << "{";
+        for (string subscription : subscriptions) {
+            cout << "\"" << subscription << "\", ";
+        }
+        cout << "}, ";
+    }
+    cout << endl;
+    return 0;
+}
